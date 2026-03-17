@@ -5,6 +5,7 @@ from app.schemas.car import CarResponse
 class FavoriteCreate(BaseModel):
     car_id: int
 
+
 class FavoriteResponse(BaseModel):
     id: int
     user_id: int

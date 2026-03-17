@@ -10,10 +10,12 @@ from app.core.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
-def get_user_by_username(db: Session, username: str):
+
+def get_user_by_username(db: Session, username: str) -> User | None:
     return db.query(User).filter(User.username == username).first()
 
-def create_user(db: Session, user: UserCreate):
+
+def create_user(db: Session, user: UserCreate) -> User:
     hashed_password = get_password_hash(user.password)
     db_user = User(
         username=user.username,
@@ -25,7 +27,8 @@ def create_user(db: Session, user: UserCreate):
     db.refresh(db_user)
     return db_user
 
-def authenticate_user(db: Session, username: str, password: str):
+
+def authenticate_user(db: Session, username: str, password: str) -> User | bool:
     user = get_user_by_username(db, username)
     if not user:
         return False
@@ -35,9 +38,10 @@ def authenticate_user(db: Session, username: str, password: str):
         
     return user
 
+
 async def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
-):
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -56,10 +60,12 @@ async def get_current_user(
         raise credentials_exception
     return user
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)):
+
+async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
-async def get_current_superadmin_user(current_user: User = Depends(get_current_active_user)):
+
+async def get_current_superadmin_user(current_user: User = Depends(get_current_active_user)) -> User:
     if current_user.role != RoleEnum.superadmin:
         raise HTTPException(status_code=403, detail="The user doesn't have enough privileges")
     return current_user

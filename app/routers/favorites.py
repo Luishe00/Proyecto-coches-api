@@ -12,6 +12,7 @@ from app.services.auth_service import get_current_active_user
 
 router = APIRouter()
 
+
 @router.post("/", response_model=FavoriteResponse, status_code=status.HTTP_201_CREATED)
 def add_favorite(
     *,
@@ -39,6 +40,7 @@ def add_favorite(
     
     return favorite
 
+
 @router.get("/", response_model=List[FavoriteResponse])
 def get_favorites(
     db: Session = Depends(get_db),
@@ -49,6 +51,7 @@ def get_favorites(
     """
     favorites = db.query(Favorite).filter(Favorite.user_id == current_user.id).all()
     return favorites
+
 
 @router.delete("/{car_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_favorite(

@@ -9,6 +9,7 @@ from app.services import car_service, auth_service
 
 router = APIRouter()
 
+
 @router.get("/", response_model=List[CarResponse])
 def read_cars(
     db: Session = Depends(get_db),
@@ -21,6 +22,7 @@ def read_cars(
     """
     cars = car_service.get_cars(db, filters=filters, skip=skip, limit=limit)
     return cars
+
 
 @router.post("/", response_model=CarResponse)
 def create_car(
@@ -35,6 +37,7 @@ def create_car(
     car = car_service.create_car(db=db, car=car_in)
     return car
 
+
 @router.get("/{car_id}", response_model=CarResponse)
 def read_car(
     *,
@@ -48,6 +51,7 @@ def read_car(
     if not car:
         raise HTTPException(status_code=404, detail="Car not found")
     return car
+
 
 @router.put("/{car_id}", response_model=CarResponse)
 def update_car(
@@ -65,6 +69,7 @@ def update_car(
         raise HTTPException(status_code=404, detail="Car not found")
     car = car_service.update_car(db=db, db_car=car, car=car_in)
     return car
+
 
 @router.delete("/{car_id}", response_model=CarResponse)
 def delete_car(

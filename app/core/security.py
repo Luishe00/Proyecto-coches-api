@@ -20,10 +20,12 @@ def create_access_token(
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     # 🛡️ TRUCO: Cortamos a 72 caracteres para evitar el ValueError de bcrypt 
     safe_password = plain_password[:72] if plain_password else ""
     return pwd_context.verify(safe_password, hashed_password)
+
 
 def get_password_hash(password: str) -> str:
     # 🛡️ TRUCO: Cortamos a 72 caracteres para evitar el ValueError de bcrypt

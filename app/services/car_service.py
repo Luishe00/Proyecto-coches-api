@@ -3,10 +3,11 @@ from sqlalchemy import or_
 from app.models.car import Car
 from app.schemas.car import CarCreate, CarUpdate, CarFilter
 
-def get_car(db: Session, car_id: int):
+def get_car(db: Session, car_id: int) -> Car:
     return db.query(Car).filter(Car.id == car_id).first()
 
-def get_cars(db: Session, filters: CarFilter, skip: int = 0, limit: int = 100):
+
+def get_cars(db: Session, filters: CarFilter, skip: int = 0, limit: int = 100) -> list[Car]:
     query = db.query(Car)
 
     if filters.marca:
@@ -24,14 +25,16 @@ def get_cars(db: Session, filters: CarFilter, skip: int = 0, limit: int = 100):
 
     return query.offset(skip).limit(limit).all()
 
-def create_car(db: Session, car: CarCreate):
+
+def create_car(db: Session, car: CarCreate) -> Car:
     db_car = Car(**car.model_dump())
     db.add(db_car)
     db.commit()
     db.refresh(db_car)
     return db_car
 
-def update_car(db: Session, db_car: Car, car: CarUpdate):
+
+def update_car(db: Session, db_car: Car, car: CarUpdate) -> Car:
     update_data = car.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_car, key, value)
@@ -41,7 +44,8 @@ def update_car(db: Session, db_car: Car, car: CarUpdate):
     db.refresh(db_car)
     return db_car
 
-def delete_car(db: Session, db_car: Car):
+
+def delete_car(db: Session, db_car: Car) -> Car:
     db.delete(db_car)
     db.commit()
     return db_car

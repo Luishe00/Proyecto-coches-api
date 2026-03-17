@@ -14,6 +14,7 @@ from app.models.user import RoleEnum, User  # Importamos el Enum para estar segu
 
 router = APIRouter()
 
+
 @router.post("/login", response_model=Token)
 def login_access_token(
     db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
@@ -32,6 +33,7 @@ def login_access_token(
         subject=user.username, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 @router.post("/register", response_model=UserOut)
 def register_user(
@@ -54,11 +56,13 @@ def register_user(
     user = auth_service.create_user(db, user=user_in)
     return user
 
+
 @router.get("/me", response_model=UserOut)
 def read_current_user(
     current_user: Any = Depends(auth_service.get_current_active_user),
 ) -> Any:
     return current_user
+
 
 @router.post("/create-admin", response_model=UserOut)
 def create_admin(

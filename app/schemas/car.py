@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+
 
 class CarBase(BaseModel):
     marca: str = Field(..., min_length=2, max_length=50)
@@ -9,8 +10,10 @@ class CarBase(BaseModel):
     velocidad_max: int = Field(..., gt=0)
     precio: float = Field(..., gt=0)
 
+
 class CarCreate(CarBase):
     pass
+
 
 class CarUpdate(BaseModel):
     marca: str | None = Field(None, min_length=2, max_length=50)
@@ -21,11 +24,12 @@ class CarUpdate(BaseModel):
     velocidad_max: int | None = Field(None, gt=0)
     precio: float | None = Field(None, gt=0)
 
+
 class CarResponse(CarBase):
     id: int
+    
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
 
 class CarFilter(BaseModel):
     marca: str | None = None

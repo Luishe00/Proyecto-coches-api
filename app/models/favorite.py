@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from app.db.session import Base
 
+
 class Favorite(Base):
     __tablename__ = "favorites"
 

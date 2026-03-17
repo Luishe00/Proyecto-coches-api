@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from app.core.config import settings
-from app.routers import auth, cars, favorites
-from app.db.session import engine, Base
 
-# Importamos el modelo para que SQLAlchemy sepa de él al ejecutar create_all
+from app.core.config import settings
+from app.db.session import engine, Base
 from app.models.favorite import Favorite
+from app.routers import auth, cars, favorites
+
 
 # Create tables if they don't exist
 # In production, use migrations (alembic) instead
