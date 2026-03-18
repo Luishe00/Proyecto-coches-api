@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from app.models.user import RoleEnum
+from app.domain.entities import RoleEnum
 from typing import Optional
 
 class UserBase(BaseModel):

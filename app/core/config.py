@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "super_secret_key_for_jwt_auth_12345"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
-    DATABASE_URL: str = "mysql+pymysql://root:@localhost:3306/car_catalog"
+    DATABASE_URL: str = "sqlite:///./cars.db"
 
     # Esta es la nueva forma de configurar en Pydantic V2
     model_config = SettingsConfigDict(

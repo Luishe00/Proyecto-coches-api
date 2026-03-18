@@ -18,7 +18,7 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def db_session():
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
@@ -40,8 +40,8 @@ def db_session():
 
 from httpx import AsyncClient, ASGITransport
 
-@pytest.fixture(scope="module")
-def client(db_session):
+@pytest.fixture(scope="function")
+async def client(db_session):
     def override_get_db():
         try:
             yield db_session
@@ -50,11 +50,11 @@ def client(db_session):
             
     app.dependency_overrides[get_db] = override_get_db
     transport = ASGITransport(app=app)
-    with AsyncClient(transport=transport, base_url="http://test") as c:
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
     app.dependency_overrides.clear()
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def superadmin_token_headers(client: AsyncClient):
     response = await client.post(
         "/api/v1/auth/login",
@@ -63,7 +63,7 @@ async def superadmin_token_headers(client: AsyncClient):
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def user_token_headers(client: AsyncClient):
     response = await client.post(
         "/api/v1/auth/login",

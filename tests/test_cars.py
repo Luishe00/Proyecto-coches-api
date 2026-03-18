@@ -66,7 +66,7 @@ async def test_superadmin_can_create_car(client: AsyncClient, superadmin_token_h
         headers=superadmin_token_headers,
         json=car_data
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["marca"] == "Tesla"
     assert "id" in data

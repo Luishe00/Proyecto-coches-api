@@ -1,71 +1,85 @@
-from sqlalchemy.orm import Session
-from app.models.user import User, RoleEnum
-from app.schemas.user import UserCreate
-from app.core.security import get_password_hash, verify_password
-from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, HTTPException, status
-from app.db.session import get_db
+from datetime import timedelta
+from typing import Optional, Union
 from jose import JWTError, jwt
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
+from app.core.security import get_password_hash, verify_password, create_access_token
+from app.core.exceptions import ConflictError, CredentialsError, PermissionDeniedError
+from app.db.session import get_db
+from app.schemas.user import UserCreate
+from app.repositories.user_repository import IUserRepository, SQLAlchemyUserRepository
+from app.domain import entities as domain
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
+def get_user_repository(db: Session = Depends(get_db)) -> IUserRepository:
+    return SQLAlchemyUserRepository(db)
 
-def get_user_by_username(db: Session, username: str) -> User | None:
-    return db.query(User).filter(User.username == username).first()
-
-
-def create_user(db: Session, user: UserCreate) -> User:
-    hashed_password = get_password_hash(user.password)
-    db_user = User(
-        username=user.username,
-        hashed_password=hashed_password,
-        role=user.role
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-
-def authenticate_user(db: Session, username: str, password: str) -> User | bool:
-    user = get_user_by_username(db, username)
-    if not user:
-        return False
+def create_user(repository: IUserRepository, user_in: UserCreate) -> domain.User:
+    if repository.get_by_username(user_in.username):
+        raise ConflictError(detail="The user with this username already exists in the system.")
     
-    if not verify_password(password, user.hashed_password):
-        return False
-        
+    user_in.role = domain.RoleEnum.user
+    hashed_password = get_password_hash(user_in.password)
+    return repository.create(
+        username=user_in.username,
+        hashed_password=hashed_password,
+        role=user_in.role
+    )
+
+def create_admin(repository: IUserRepository, user_in: UserCreate) -> domain.User:
+    if repository.get_by_username(user_in.username):
+        raise ConflictError(detail="The user with this username already exists in the system.")
+    
+    user_in.role = domain.RoleEnum.superadmin
+    hashed_password = get_password_hash(user_in.password)
+    return repository.create(
+        username=user_in.username,
+        hashed_password=hashed_password,
+        role=user_in.role
+    )
+
+def login_for_access_token(repository: IUserRepository, username: str, password: str) -> dict:
+    user = authenticate_user(repository, username=username, password=password)
+    if not user:
+        raise CredentialsError(detail="Incorrect username or password")
+    
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        subject=user.username, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+def authenticate_user(repository: IUserRepository, username: str, password: str) -> Optional[domain.User]:
+    user = repository.get_by_username(username)
+    if not user or not verify_password(password, user.hashed_password):
+        return None
     return user
 
-
 async def get_current_user(
-    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
-) -> User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    repository: IUserRepository = Depends(get_user_repository), 
+    token: str = Depends(oauth2_scheme)
+) -> domain.User:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
-            raise credentials_exception
+            raise CredentialsError()
     except JWTError:
-        raise credentials_exception
+        raise CredentialsError()
     
-    user = get_user_by_username(db, username=username)
+    user = repository.get_by_username(username=username)
     if user is None:
-        raise credentials_exception
+        raise CredentialsError()
     return user
 
-
-async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+async def get_current_active_user(current_user: domain.User = Depends(get_current_user)) -> domain.User:
     return current_user
 
-
-async def get_current_superadmin_user(current_user: User = Depends(get_current_active_user)) -> User:
-    if current_user.role != RoleEnum.superadmin:
-        raise HTTPException(status_code=403, detail="The user doesn't have enough privileges")
+async def get_current_active_superadmin(current_user: domain.User = Depends(get_current_active_user)) -> domain.User:
+    if current_user.role != domain.RoleEnum.superadmin:
+        raise PermissionDeniedError()
     return current_user

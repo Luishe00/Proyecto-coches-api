@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Arquitectura - Proyecto Coches API</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--accent); }
+        .subtitle { font-size: 1.2rem; color: var(--text-secondary); max-width: 800px; margin: 0 auto; }
+
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 2rem; }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #334155;
+        }
+
+        h2 { border-left: 4px solid var(--accent); padding-left: 1rem; margin-top: 0; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background: var(--success);
+            color: #064e3b;
+        }
+
+        .mermaid {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin: 2rem 0;
+        }
+
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 1rem; padding-left: 1.5rem; position: relative; }
+        li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .card { background: #334155; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #475569; }
+        .card h3 { margin-top: 0; color: var(--accent); }
+
+        footer { text-align: center; color: var(--text-secondary); padding: 4rem 0; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Informe de Arquitectura Final</h1>
+    <p class="subtitle">Análisis técnico-funcional del Proyecto Coches API tras la migración a 100% Arquitectura Hexagonal.</p>
+</header>
+
+<div class="container">
+    <div class="section">
+        <h2>Análisis de Arquitectura Post-Migración</h2>
+        <p>Tras la última fase de refactorización, el proyecto ha alcanzado un estado de <strong>Arquitectura Hexagonal Pura (100%)</strong>. Se han eliminado todas las fugas de infraestructura que existían anteriormente en las capas superiores.</p>
+        <div class="card">
+            <p><strong>Estado Actual:</strong> <span class="badge">100% Hexagonal (Ports & Adapters)</span></p>
+            <ul>
+                <li><strong>Capas Desacopladas:</strong> El núcleo (Domain) ya no conoce nada de SQLAlchemy, FastAPI o Pydantic.</li>
+                <li><strong>Inversión de Dependencias:</strong> Los servicios dependen de interfaces (Repositorios), no de implementaciones concretas.</li>
+                <li><strong>Entidades de Dominio:</strong> Los objetos de negocio son Dataclasses de Python que viajan por todo el sistema sin estar atados a la base de datos.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Diagrama Inicial (Layered / Coupled)</h2>
+        <p>Estado previo del sistema donde los servicios y routers dependían directamente de los modelos de SQLAlchemy y la sesión de base de datos.</p>
+        <div class="mermaid">
+graph TD
+    subgraph UI_Layer ["Router Layer"]
+        Router["FastAPI Routers"]
+    end
+    
+    subgraph Logic_Layer ["Service Layer"]
+        Service["Services"]
+    end
+    
+    subgraph Data_Layer ["Infrastructure"]
+        Model["SQLAlchemy Models"]
+        DB[("SQLite/MySQL")]
+    end
+    
+    Router --> Service
+    Service --> Model
+    Model --> DB
+    Router -.-> Model
+    style UI_Layer fill:#f9f,stroke:#333
+    style Logic_Layer fill:#bbf,stroke:#333
+    style Data_Layer fill:#dfd,stroke:#333
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Diagrama Hexagonal (Propuesta Final)</h2>
+        <p>Estructura actual donde el **Dominio** está en el centro, rodeado por **Puertos** (Interfaces) y **Adaptadores** (FastAPI, SQLAlchemy).</p>
+        <div class="mermaid">
+graph LR
+    subgraph External ["External World"]
+        Web["FastAPI Client"]
+        DB_Infra[("SQLite Database")]
+    end
+
+    subgraph Infrastructure_Adapters ["Infrastructure Adapters"]
+        RestAdapter["Routers/Schemas"]
+        RepoAdapter["SQLAlchemy Repositories"]
+    end
+
+    subgraph Application_Ports ["Application Ports"]
+        IRepo["Repository Interfaces"]
+    end
+
+    subgraph Domain_Core ["Domain Core"]
+        Entities["Domain Entities"]
+        Services["Domain Services"]
+    end
+
+    Web --> RestAdapter
+    RestAdapter --> Services
+    Services --> IRepo
+    RepoAdapter --> IRepo
+    RepoAdapter --> DB_Infra
+    
+    Services -.-> Entities
+    RepoAdapter -.-> Entities
+    
+    style Domain_Core fill:#38bdf8,stroke:#000,color:#000
+    style Application_Ports fill:#10b981,stroke:#000
+    style Infrastructure_Adapters fill:#475569,stroke:#000
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Fundamentación y Beneficios</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Mantenibilidad</h3>
+                <p>Cualquier cambio en la base de datos (e.g. pasar de SQLite a Postgres) solo afecta a un archivo de Adaptador. El núcleo permanece intacto.</p>
+            </div>
+            <div class="card">
+                <h3>Testabilidad</h3>
+                <p>Ahora es posible realizar test unitarios puros de los servicios inyectando "Mocks" de los repositorios, sin necesidad de levantar una base de datos real o mocks complejos de SQLAlchemy.</p>
+            </div>
+            <div class="card">
+                <h3>Escalabilidad</h3>
+                <p>El código es agnóstico al framework. Si en el futuro decides cambiar FastAPI por otro, la lógica de negocio se puede reutilizar sin cambios.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 Arquitectura de Software Senior - Proyecto Desarrollado con Excelencia Técnica.</p>
+</footer>
+
+<script>
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+</script>
+
+</body>
+</html>

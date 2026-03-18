@@ -1,88 +1,69 @@
-from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-
 from app.db.session import get_db
-from app.schemas.car import CarCreate, CarUpdate, CarResponse, CarFilter
-from app.schemas.user import UserOut
+from app.schemas.car import CarResponse as Car, CarCreate, CarUpdate, CarFilter
 from app.services import car_service, auth_service
+from app.repositories.car_repository import ICarRepository, SQLAlchemyCarRepository
+from app.domain.entities import User
 
 router = APIRouter()
 
+def get_car_repository(db: Session = Depends(get_db)) -> ICarRepository:
+    return SQLAlchemyCarRepository(db)
 
-@router.get("/", response_model=List[CarResponse])
+@router.get("/", response_model=List[Car])
 def read_cars(
-    db: Session = Depends(get_db),
-    skip: int = 0,
-    limit: int = 100,
-    filters: CarFilter = Depends()
-) -> Any:
+    filters: CarFilter = Depends(),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1),
+    repository: ICarRepository = Depends(get_car_repository)
+):
     """
     Retrieve cars with advanced filtering.
     """
-    cars = car_service.get_cars(db, filters=filters, skip=skip, limit=limit)
-    return cars
+    return car_service.get_cars(repository, filters, skip=skip, limit=limit)
 
+@router.get("/{car_id}", response_model=Car)
+def read_car(
+    car_id: int,
+    repository: ICarRepository = Depends(get_car_repository)
+):
+    """
+    Get a specific car by ID.
+    """
+    return car_service.get_car(repository, car_id)
 
-@router.post("/", response_model=CarResponse)
+@router.post("/", response_model=Car, status_code=status.HTTP_201_CREATED)
 def create_car(
-    *,
-    db: Session = Depends(get_db),
     car_in: CarCreate,
-    current_user: UserOut = Depends(auth_service.get_current_superadmin_user)
-) -> Any:
+    current_user: User = Depends(auth_service.get_current_active_superadmin),
+    repository: ICarRepository = Depends(get_car_repository)
+):
     """
     Create new car. Requires 'superadmin' role.
     """
-    car = car_service.create_car(db=db, car=car_in)
-    return car
+    return car_service.create_car(repository, car_in)
 
-
-@router.get("/{car_id}", response_model=CarResponse)
-def read_car(
-    *,
-    db: Session = Depends(get_db),
-    car_id: int,
-) -> Any:
-    """
-    Get car by ID.
-    """
-    car = car_service.get_car(db=db, car_id=car_id)
-    if not car:
-        raise HTTPException(status_code=404, detail="Car not found")
-    return car
-
-
-@router.put("/{car_id}", response_model=CarResponse)
+@router.put("/{car_id}", response_model=Car)
 def update_car(
-    *,
-    db: Session = Depends(get_db),
     car_id: int,
     car_in: CarUpdate,
-    current_user: UserOut = Depends(auth_service.get_current_superadmin_user)
-) -> Any:
+    current_user: User = Depends(auth_service.get_current_active_superadmin),
+    repository: ICarRepository = Depends(get_car_repository)
+):
     """
     Update a car. Requires 'superadmin' role.
     """
-    car = car_service.get_car(db=db, car_id=car_id)
-    if not car:
-        raise HTTPException(status_code=404, detail="Car not found")
-    car = car_service.update_car(db=db, db_car=car, car=car_in)
-    return car
+    return car_service.update_car(repository, car_id, car_in)
 
-
-@router.delete("/{car_id}", response_model=CarResponse)
+@router.delete("/{car_id}", response_model=Car)
 def delete_car(
-    *,
-    db: Session = Depends(get_db),
     car_id: int,
-    current_user: UserOut = Depends(auth_service.get_current_superadmin_user)
-) -> Any:
+    current_user: User = Depends(auth_service.get_current_active_superadmin),
+    repository: ICarRepository = Depends(get_car_repository)
+):
     """
     Delete a car. Requires 'superadmin' role.
     """
-    car = car_service.get_car(db=db, car_id=car_id)
-    if not car:
-        raise HTTPException(status_code=404, detail="Car not found")
-    car = car_service.delete_car(db=db, db_car=car)
-    return car
+    return car_service.delete_car(repository, car_id)

@@ -1,51 +1,32 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from app.models.car import Car
+from typing import List, Optional
+from app.repositories.car_repository import ICarRepository
 from app.schemas.car import CarCreate, CarUpdate, CarFilter
-
-def get_car(db: Session, car_id: int) -> Car:
-    return db.query(Car).filter(Car.id == car_id).first()
-
-
-def get_cars(db: Session, filters: CarFilter, skip: int = 0, limit: int = 100) -> list[Car]:
-    query = db.query(Car)
-
-    if filters.marca:
-        query = query.filter(Car.marca.ilike(f"%{filters.marca}%"))
-    if filters.modelo:
-        query = query.filter(Car.modelo.ilike(f"%{filters.modelo}%"))
-    if filters.anio_min is not None:
-        query = query.filter(Car.anio_fabricacion >= filters.anio_min)
-    if filters.anio_max is not None:
-        query = query.filter(Car.anio_fabricacion <= filters.anio_max)
-    if filters.precio_max is not None:
-        query = query.filter(Car.precio <= filters.precio_max)
-    if filters.velocidad_min is not None:
-        query = query.filter(Car.velocidad_max >= filters.velocidad_min)
-
-    return query.offset(skip).limit(limit).all()
+from app.domain import entities as domain
+from app.core.exceptions import EntityNotFoundError
 
 
-def create_car(db: Session, car: CarCreate) -> Car:
-    db_car = Car(**car.model_dump())
-    db.add(db_car)
-    db.commit()
-    db.refresh(db_car)
-    return db_car
+def get_car(repository: ICarRepository, car_id: int) -> domain.Car:
+    car = repository.get_by_id(car_id)
+    if not car:
+        raise EntityNotFoundError(detail="Car not found")
+    return car
 
 
-def update_car(db: Session, db_car: Car, car: CarUpdate) -> Car:
-    update_data = car.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(db_car, key, value)
-    
-    db.add(db_car)
-    db.commit()
-    db.refresh(db_car)
-    return db_car
+def get_cars(repository: ICarRepository, filters: CarFilter, skip: int = 0, limit: int = 100) -> List[domain.Car]:
+    return repository.get_all(filters, skip=skip, limit=limit)
 
 
-def delete_car(db: Session, db_car: Car) -> Car:
-    db.delete(db_car)
-    db.commit()
-    return db_car
+def create_car(repository: ICarRepository, car_in: CarCreate) -> domain.Car:
+    return repository.create(car_in)
+
+
+def update_car(repository: ICarRepository, car_id: int, car_in: CarUpdate) -> domain.Car:
+    # Primero verificamos que exista lanzando excepción si no
+    get_car(repository, car_id)
+    return repository.update(car_id, car_in)
+
+
+def delete_car(repository: ICarRepository, car_id: int) -> domain.Car:
+    # Verificamos que exista
+    get_car(repository, car_id)
+    return repository.delete(car_id)
