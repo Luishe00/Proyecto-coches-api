@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.db.session import SessionLocal, engine, Base
 from app.models.car import Car
 from app.models.user import User, RoleEnum
+from app.models.favorite import Favorite
 from app.core.security import get_password_hash
 
 def seed_data():
@@ -18,8 +19,9 @@ def seed_data():
     
     db: Session = SessionLocal()
     try:
-        # 1. Limpiar datos existentes para evitar duplicados si se lanza varias veces
+        # 1. Limpiar datos existentes
         print("🧹 Limpiando datos antiguos...")
+        db.query(Favorite).delete()
         db.query(Car).delete()
         db.query(User).delete()
         db.commit()

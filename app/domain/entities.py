@@ -32,3 +32,4 @@ class Favorite:
     id: Optional[int] = None
     created_at: Optional[datetime] = None
     car: Optional[Car] = None
+    selected_color: Optional[str] = None
