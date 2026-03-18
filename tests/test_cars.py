@@ -37,7 +37,8 @@ async def test_normal_user_cannot_create_car(client: AsyncClient, user_token_hea
         "cv": 190,
         "peso": 1500,
         "velocidad_max": 240,
-        "precio": 45000
+        "precio": 45000,
+        "color_fabrica": "Blanco"
     }
     response = await client.post(
         "/api/v1/cars/",
@@ -59,7 +60,8 @@ async def test_superadmin_can_create_car(client: AsyncClient, superadmin_token_h
         "cv": 400,
         "peso": 1800,
         "velocidad_max": 250,
-        "precio": 50000
+        "precio": 50000,
+        "color_fabrica": "Blanco"
     }
     response = await client.post(
         "/api/v1/cars/",

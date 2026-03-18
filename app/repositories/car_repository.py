@@ -41,7 +41,8 @@ class SQLAlchemyCarRepository(ICarRepository):
             cv=db_car.cv,
             peso=db_car.peso,
             velocidad_max=db_car.velocidad_max,
-            precio=db_car.precio
+            precio=db_car.precio,
+            color_fabrica=db_car.color_fabrica
         )
 
     def get_by_id(self, car_id: int) -> Optional[domain.Car]:

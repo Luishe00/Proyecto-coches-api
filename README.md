@@ -1,53 +1,56 @@
 # 🏎️ Car Catalog API - Arquitectura Hexagonal (100%)
 
-Esta es una API REST profesional para un catálogo de coches, diseñada siguiendo los principios de la **Arquitectura Hexagonal (Puertos y Adaptadores)**. Ofrece un sistema robusto de roles (RBAC), gestión de favoritos y un núcleo de negocio totalmente desacoplado de la infraestructura.
+Esta es una API REST profesional para un catálogo de coches de lujo, diseñada bajo los principios de **Arquitectura Hexagonal (Puertos y Adaptadores)**. Ofrece un sistema de roles (RBAC), gestión de favoritos con personalización de color y un núcleo de negocio 100% desacoplado.
 
-## 🏗️ Arquitectura
-El proyecto ha sido refactorizado para garantizar un desacoplamiento total:
-- **Dominio**: Entidades puras en `app/domain/entities.py`. Zero dependencias.
-- **Servicios**: Lógica de negocio agnóstica al framework.
-- **Adaptadores**: Implementaciones concretas para FastAPI (Web) y SQLAlchemy (Persistencia).
+## 🌟 Características Destacadas
 
-## 🚀 Requisitos Previos
+- **Doble Capa de Color**: 
+  - **Color de Fábrica**: Cada coche del catálogo incluye su color original icónico (ej. Ferrari Rosso Corsa).
+  - **Personalización Privada**: Los usuarios registrados pueden elegir y actualizar su propio color en su lista de favoritos.
+- **Arquitectura Hexagonal Pura**: Separación estricta entre Dominio, Aplicación e Infraestructura.
+- **RBAC (Role-Based Access Control)**: Diferenciación clara entre `superadmin` y `user`.
+- **Base de Datos SQLite**: Sin dependencias externas pesadas, lista para funcionar.
+
+## 🏗️ Estructura del Proyecto
+- **Dominio (`app/domain`)**: Entidades de negocio (`Car`, `Favorite`, `User`). Zero dependencias externas.
+- **Aplicación (`app/services`)**: Casos de uso como `favorite_service` que orquestan la lógica.
+- **Infraestructura (`app/infrastructure/`)**: 
+  - **FastAPI**: Adaptadores web, routers y esquemas Pydantic.
+  - **SQLAlchemy**: Adaptadores de persistencia con mappers a entidades de dominio.
+
+## 🚀 Requisitos e Instalación
 1. **Python 3.10+**.
-2. No se requiere XAMPP ni MySQL (migrado a **SQLite** para máxima portabilidad).
-
-## 🛠️ Instalación y Configuración
-1. **Clonar el repositorio** y acceder a la carpeta `/backend`.
 2. **Instalar Dependencias:**
    ```bash
    pip install -r requirements.txt
    ```
-3. **Configurar Entorno:**
-   Copia `.env.example` a `.env` y ajusta las variables si es necesario.
-   ```bash
-   cp .env.example .env
-   ```
-4. **Semillas de Datos (Seed):**
-   Para poblar la base de datos con los 24 coches iniciales y usuarios de prueba:
+3. **Semillas de Datos (Seed):**
+   Puebla la base de datos con **24 coches icónicos** y usuarios de prueba:
    ```bash
    python seed_db.py
    ```
 
-## 🏎️ Ejecución
-Para arrancar el servidor de desarrollo:
-```bash
-uvicorn app.main:app --reload
-```
-Accede a la documentación Interactiva (Swagger): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+## 🏎️ Guía de Uso
+1. **Arrancar Servidor:**
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+2. **Documentación Swagger:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+3. **Endpoints de Color**:
+   - `GET /api/v1/cars/`: Ver catálogo con `color_fabrica`.
+   - `POST /api/v1/favorites/`: Añadir favorito con color opcional.
+   - `PATCH /api/v1/favorites/{car_id}/color`: Personalizar color (Solo registrados).
 
 ## 🧪 Testing
-El proyecto incluye una suite completa de tests que validan tanto la integración como la lógica de negocio pura:
-- **Ejecutar todos los tests:**
-  ```bash
-  pytest tests/
-  ```
-- **Tests Unitarios (Mocks):** `tests/test_unit_cars.py`
-- **Tests Integración (DB):** `tests/test_cars.py`, `tests/test_auth.py`, `tests/test_favorites.py`.
+Suite completa de **22 tests** (Unitarios e Integración):
+```bash
+pytest tests/
+```
+Incluye validaciones de RBAC, integridad de base de datos y flujos de personalización.
 
-## 🔒 Roles y Seguridad
-* **Superadmin (`admin` / `admin123`)**: Control total sobre el catálogo de coches.
-* **User (`user` / `user123`)**: Acceso a lectura y gestión de su propia lista de **Favoritos**.
+## 🔒 Usuarios de Prueba
+- **Superadmin**: `admin` / `admin123`
+- **User**: `user` / `user123`
 
 ---
-*Diseñado con ❤️ siguiendo Clean Code y Principios SOLID.*
+*Diseñado con ❤️ siguiendo Clean Code, SOLID y Arquitectura Hexagonal.*

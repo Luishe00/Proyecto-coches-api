@@ -13,7 +13,7 @@ def test_get_car_unit():
     """
     # 1. Arrange: Preparamos el mock y el dato de prueba
     mock_repo = MagicMock(spec=ICarRepository)
-    fake_car = Car(id=99, marca="Tesla", modelo="Model S", precio=100000)
+    fake_car = Car(id=99, marca="Tesla", modelo="Model S", precio=100000, color_fabrica="Blanco")
     mock_repo.get_by_id.return_value = fake_car
 
     # 2. Act: Llamamos al servicio pasarle el mock
@@ -42,7 +42,7 @@ def test_create_car_unit():
     Verifica la creación delegando en el repositorio.
     """
     mock_repo = MagicMock(spec=ICarRepository)
-    car_in = CarCreate(marca="Ford", modelo="Focus", anio_fabricacion=2022, cv=150, peso=1400, velocidad_max=210, precio=30000)
+    car_in = CarCreate(marca="Ford", modelo="Focus", anio_fabricacion=2022, cv=150, peso=1400, velocidad_max=210, precio=30000, color_fabrica="Azul")
     fake_car = Car(id=1, **car_in.model_dump())
     mock_repo.create.return_value = fake_car
 

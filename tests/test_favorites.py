@@ -15,7 +15,8 @@ async def test_add_favorite_success(client: AsyncClient, db_session: Session, us
         cv=150,
         peso=1200.0,
         velocidad_max=200,
-        precio=25000.0
+        precio=25000.0,
+        color_fabrica="Blanco"
     )
     db_session.add(car)
     db_session.commit()
@@ -50,7 +51,8 @@ async def test_add_favorite_duplicate(client: AsyncClient, db_session: Session, 
         cv=150,
         peso=1200.0,
         velocidad_max=200,
-        precio=25000.0
+        precio=25000.0,
+        color_fabrica="Blanco"
     )
     db_session.add(car)
     db_session.commit()
@@ -91,7 +93,8 @@ async def test_remove_favorite(client: AsyncClient, db_session: Session, user_to
         cv=150,
         peso=1200.0,
         velocidad_max=200,
-        precio=25000.0
+        precio=25000.0,
+        color_fabrica="Blanco"
     )
     db_session.add(car)
     db_session.commit()

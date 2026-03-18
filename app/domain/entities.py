@@ -16,6 +16,7 @@ class Car:
     peso: float
     velocidad_max: int
     precio: float
+    color_fabrica: str
     id: Optional[int] = None
 
 @dataclass

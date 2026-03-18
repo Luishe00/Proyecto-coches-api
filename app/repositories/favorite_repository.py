@@ -50,7 +50,8 @@ class SQLAlchemyFavoriteRepository(IFavoriteRepository):
                 cv=db_fav.car.cv,
                 peso=db_fav.car.peso,
                 velocidad_max=db_fav.car.velocidad_max,
-                precio=db_fav.car.precio
+                precio=db_fav.car.precio,
+                color_fabrica=db_fav.car.color_fabrica
             )
 
         return domain.Favorite(

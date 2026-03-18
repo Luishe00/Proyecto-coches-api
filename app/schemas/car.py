@@ -9,6 +9,7 @@ class CarBase(BaseModel):
     peso: float = Field(..., gt=0)
     velocidad_max: int = Field(..., gt=0)
     precio: float = Field(..., gt=0)
+    color_fabrica: str = Field(..., min_length=2, max_length=50)
 
 
 class CarCreate(CarBase):
@@ -23,6 +24,7 @@ class CarUpdate(BaseModel):
     peso: float | None = Field(None, gt=0)
     velocidad_max: int | None = Field(None, gt=0)
     precio: float | None = Field(None, gt=0)
+    color_fabrica: str | None = Field(None, min_length=2, max_length=50)
 
 
 class CarResponse(CarBase):
@@ -38,3 +40,4 @@ class CarFilter(BaseModel):
     anio_max: int | None = None
     precio_max: float | None = None
     velocidad_min: int | None = None
+    color_fabrica: str | None = None

@@ -13,3 +13,4 @@ class Car(Base):
     peso = Column(Float, nullable=False)
     velocidad_max = Column(Integer, nullable=False)
     precio = Column(Float, index=True, nullable=False)
+    color_fabrica = Column(String(50), nullable=False, default="Blanco")

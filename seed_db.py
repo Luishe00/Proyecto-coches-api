@@ -55,43 +55,43 @@ def seed_data():
         db.commit()
 
         # 3. Listado de 24 coches (mismos que tenías antes)
-        print("🏎️  Insertando 24 coches...")
+        print("🏎️  Insertando 24 coches con colores de fábrica...")
         cars_data = [
             # Ferrari
-            {"marca": "Ferrari", "modelo": "488 GTB", "anio_fabricacion": 2016, "cv": 670, "peso": 1370, "velocidad_max": 330, "precio": 250000},
-            {"marca": "Ferrari", "modelo": "F8 Tributo", "anio_fabricacion": 2020, "cv": 720, "peso": 1435, "velocidad_max": 340, "precio": 276000},
-            {"marca": "Ferrari", "modelo": "SF90 Stradale", "anio_fabricacion": 2021, "cv": 1000, "peso": 1570, "velocidad_max": 340, "precio": 500000},
-            {"marca": "Ferrari", "modelo": "Roma", "anio_fabricacion": 2020, "cv": 620, "peso": 1570, "velocidad_max": 320, "precio": 220000},
+            {"marca": "Ferrari", "modelo": "488 GTB", "anio_fabricacion": 2016, "cv": 670, "peso": 1370, "velocidad_max": 330, "precio": 250000, "color_fabrica": "Rosso Corsa"},
+            {"marca": "Ferrari", "modelo": "F8 Tributo", "anio_fabricacion": 2020, "cv": 720, "peso": 1435, "velocidad_max": 340, "precio": 276000, "color_fabrica": "Giallo Modena"},
+            {"marca": "Ferrari", "modelo": "SF90 Stradale", "anio_fabricacion": 2021, "cv": 1000, "peso": 1570, "velocidad_max": 340, "precio": 500000, "color_fabrica": "Argento Nurburgring"},
+            {"marca": "Ferrari", "modelo": "Roma", "anio_fabricacion": 2020, "cv": 620, "peso": 1570, "velocidad_max": 320, "precio": 220000, "color_fabrica": "Blu Pozzi"},
             
             # Porsche
-            {"marca": "Porsche", "modelo": "911 Carrera S", "anio_fabricacion": 2019, "cv": 450, "peso": 1515, "velocidad_max": 308, "precio": 130000},
-            {"marca": "Porsche", "modelo": "Taycan Turbo S", "anio_fabricacion": 2020, "cv": 761, "peso": 2295, "velocidad_max": 260, "precio": 185000},
-            {"marca": "Porsche", "modelo": "Panamera GTS", "anio_fabricacion": 2021, "cv": 480, "peso": 2020, "velocidad_max": 300, "precio": 140000},
-            {"marca": "Porsche", "modelo": "Cayenne Turbo", "anio_fabricacion": 2018, "cv": 550, "peso": 2175, "velocidad_max": 286, "precio": 135000},
+            {"marca": "Porsche", "modelo": "911 Carrera S", "anio_fabricacion": 2019, "cv": 450, "peso": 1515, "velocidad_max": 308, "precio": 130000, "color_fabrica": "Guards Red"},
+            {"marca": "Porsche", "modelo": "Taycan Turbo S", "anio_fabricacion": 2020, "cv": 761, "peso": 2295, "velocidad_max": 260, "precio": 185000, "color_fabrica": "Frozen Blue Metallic"},
+            {"marca": "Porsche", "modelo": "Panamera GTS", "anio_fabricacion": 2021, "cv": 480, "peso": 2020, "velocidad_max": 300, "precio": 140000, "color_fabrica": "Mamba Green Metallic"},
+            {"marca": "Porsche", "modelo": "Cayenne Turbo", "anio_fabricacion": 2018, "cv": 550, "peso": 2175, "velocidad_max": 286, "precio": 135000, "color_fabrica": "Jet Black Metallic"},
 
             # BMW
-            {"marca": "BMW", "modelo": "M3 Competition", "anio_fabricacion": 2021, "cv": 510, "peso": 1730, "velocidad_max": 290, "precio": 85000},
-            {"marca": "BMW", "modelo": "M5 CS", "anio_fabricacion": 2022, "cv": 635, "peso": 1825, "velocidad_max": 305, "precio": 142000},
-            {"marca": "BMW", "modelo": "X5 M", "anio_fabricacion": 2020, "cv": 600, "peso": 2310, "velocidad_max": 250, "precio": 105000},
-            {"marca": "BMW", "modelo": "i4 M50", "anio_fabricacion": 2022, "cv": 544, "peso": 2215, "velocidad_max": 225, "precio": 65000},
+            {"marca": "BMW", "modelo": "M3 Competition", "anio_fabricacion": 2021, "cv": 510, "peso": 1730, "velocidad_max": 290, "precio": 85000, "color_fabrica": "Isle of Man Green"},
+            {"marca": "BMW", "modelo": "M5 CS", "anio_fabricacion": 2022, "cv": 635, "peso": 1825, "velocidad_max": 305, "precio": 142000, "color_fabrica": "Frozen Deep Green"},
+            {"marca": "BMW", "modelo": "X5 M", "anio_fabricacion": 2020, "cv": 600, "peso": 2310, "velocidad_max": 250, "precio": 105000, "color_fabrica": "Marina Bay Blue"},
+            {"marca": "BMW", "modelo": "i4 M50", "anio_fabricacion": 2022, "cv": 544, "peso": 2215, "velocidad_max": 225, "precio": 65000, "color_fabrica": "Portimao Blue"},
 
             # Audi
-            {"marca": "Audi", "modelo": "RS e-tron GT", "anio_fabricacion": 2021, "cv": 646, "peso": 2347, "velocidad_max": 250, "precio": 140000},
-            {"marca": "Audi", "modelo": "R8 V10 Performance", "anio_fabricacion": 2019, "cv": 620, "peso": 1595, "velocidad_max": 331, "precio": 195000},
-            {"marca": "Audi", "modelo": "RS6 Avant", "anio_fabricacion": 2020, "cv": 600, "peso": 2075, "velocidad_max": 305, "precio": 110000},
-            {"marca": "Audi", "modelo": "RSQ8", "anio_fabricacion": 2020, "cv": 600, "peso": 2315, "velocidad_max": 305, "precio": 115000},
+            {"marca": "Audi", "modelo": "RS e-tron GT", "anio_fabricacion": 2021, "cv": 646, "peso": 2347, "velocidad_max": 250, "precio": 140000, "color_fabrica": "Tactical Green"},
+            {"marca": "Audi", "modelo": "R8 V10 Performance", "anio_fabricacion": 2019, "cv": 620, "peso": 1595, "velocidad_max": 331, "precio": 195000, "color_fabrica": "Kemora Gray"},
+            {"marca": "Audi", "modelo": "RS6 Avant", "anio_fabricacion": 2020, "cv": 600, "peso": 2075, "velocidad_max": 305, "precio": 110000, "color_fabrica": "Nardo Gray"},
+            {"marca": "Audi", "modelo": "RSQ8", "anio_fabricacion": 2020, "cv": 600, "peso": 2315, "velocidad_max": 305, "precio": 115000, "color_fabrica": "Orca Black"},
 
             # Toyota
-            {"marca": "Toyota", "modelo": "GR Yaris", "anio_fabricacion": 2020, "cv": 261, "peso": 1280, "velocidad_max": 230, "precio": 35000},
-            {"marca": "Toyota", "modelo": "GR Supra", "anio_fabricacion": 2019, "cv": 340, "peso": 1495, "velocidad_max": 250, "precio": 52000},
-            {"marca": "Toyota", "modelo": "RAV4 Hybrid", "anio_fabricacion": 2021, "cv": 218, "peso": 1590, "velocidad_max": 180, "precio": 38000},
-            {"marca": "Toyota", "modelo": "Corolla GR", "anio_fabricacion": 2023, "cv": 300, "peso": 1475, "velocidad_max": 230, "precio": 40000},
+            {"marca": "Toyota", "modelo": "GR Yaris", "anio_fabricacion": 2020, "cv": 261, "peso": 1280, "velocidad_max": 230, "precio": 35000, "color_fabrica": "Precious Black"},
+            {"marca": "Toyota", "modelo": "GR Supra", "anio_fabricacion": 2019, "cv": 340, "peso": 1495, "velocidad_max": 250, "precio": 52000, "color_fabrica": "Renaissance Red 2.0"},
+            {"marca": "Toyota", "modelo": "RAV4 Hybrid", "anio_fabricacion": 2021, "cv": 218, "peso": 1590, "velocidad_max": 180, "precio": 38000, "color_fabrica": "Lunar Rock"},
+            {"marca": "Toyota", "modelo": "Corolla GR", "anio_fabricacion": 2023, "cv": 300, "peso": 1475, "velocidad_max": 230, "precio": 40000, "color_fabrica": "Supersonic Red"},
 
             # Tesla
-            {"marca": "Tesla", "modelo": "Model S Plaid", "anio_fabricacion": 2021, "cv": 1020, "peso": 2162, "velocidad_max": 322, "precio": 130000},
-            {"marca": "Tesla", "modelo": "Model 3 Performance", "anio_fabricacion": 2022, "cv": 513, "peso": 1844, "velocidad_max": 261, "precio": 55000},
-            {"marca": "Tesla", "modelo": "Model X Plaid", "anio_fabricacion": 2022, "cv": 1020, "peso": 2455, "velocidad_max": 262, "precio": 138000},
-            {"marca": "Tesla", "modelo": "Model Y Long Range", "anio_fabricacion": 2021, "cv": 351, "peso": 2003, "velocidad_max": 217, "precio": 50000},
+            {"marca": "Tesla", "modelo": "Model S Plaid", "anio_fabricacion": 2021, "cv": 1020, "peso": 2162, "velocidad_max": 322, "precio": 130000, "color_fabrica": "Midnight Silver Metallic"},
+            {"marca": "Tesla", "modelo": "Model 3 Performance", "anio_fabricacion": 2022, "cv": 513, "peso": 1844, "velocidad_max": 261, "precio": 55000, "color_fabrica": "Pearl White Multi-Coat"},
+            {"marca": "Tesla", "modelo": "Model X Plaid", "anio_fabricacion": 2022, "cv": 1020, "peso": 2455, "velocidad_max": 262, "precio": 138000, "color_fabrica": "Solid Black"},
+            {"marca": "Tesla", "modelo": "Model Y Long Range", "anio_fabricacion": 2021, "cv": 351, "peso": 2003, "velocidad_max": 217, "precio": 50000, "color_fabrica": "Deep Blue Metallic"},
         ]
 
         for car in cars_data:
