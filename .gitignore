@@ -5,3 +5,6 @@ __pycache__/
 *.pyc
 *.db
 .pytest_cache/
+.coverage
+app/infrastructure/
+test.db
