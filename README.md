@@ -42,11 +42,25 @@ Esta es una API REST profesional para un catálogo de coches de lujo, diseñada 
    - `PATCH /api/v1/favorites/{car_id}/color`: Personalizar color (Solo registrados).
 
 ## 🧪 Testing
-Suite completa de **22 tests** (Unitarios e Integración):
-```bash
-pytest tests/
-```
-Incluye validaciones de RBAC, integridad de base de datos y flujos de personalización.
+El proyecto cuenta con una robusta suite de **33 tests** dividida estratégicamente:
+
+1. **Pruebas Unitarias de Caja Blanca (Aislamiento Total)**:
+   Aíslan por completo la capa de aplicación usando Mocks (`unittest.mock`), garantizando un exhaustivo control en las rutas lógicas de:
+   - `auth_service` (JWT, Verificaciones de roles estrictas)
+   - `car_service` (CRUD)
+   - `favorite_service` (Control de duplicados, RBAC)
+   - `car_image_service` (Validación de archivos sin manipular el filesystem)
+   
+   ```bash
+   pytest tests/test_unit_*.py
+   ```
+
+2. **Pruebas de Integración (API y DB)**:
+   Valida el correcto funcionamiento de los endpoints, middlewares y la integridad persistente en la Base de Datos SQLite.
+   
+   ```bash
+   pytest tests/
+   ```
 
 ## 🔒 Usuarios de Prueba
 - **Superadmin**: `admin` / `admin123`
