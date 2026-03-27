@@ -1,5 +1,7 @@
+import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.exceptions import AppException
@@ -16,6 +18,12 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
+
+# Asegurar que el directorio estático existe
+os.makedirs("app/infrastructure/static/uploads/cars", exist_ok=True)
+
+# Montar ruta estática para servir imágenes
+app.mount("/static", StaticFiles(directory="app/infrastructure/static"), name="static")
 
 
 @app.exception_handler(AppException)

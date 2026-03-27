@@ -14,3 +14,4 @@ class Car(Base):
     velocidad_max = Column(Integer, nullable=False)
     precio = Column(Float, index=True, nullable=False)
     color_fabrica = Column(String(50), nullable=False, default="Blanco")
+    image_url = Column(String(500), nullable=True)

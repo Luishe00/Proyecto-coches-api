@@ -95,6 +95,10 @@ def seed_data():
         ]
 
         for car in cars_data:
+            # Generar URL dinámica usando búsqueda de Unsplash
+            marca_query = car["marca"].lower()
+            modelo_query = car["modelo"].lower().replace(" ", "")
+            car["image_url"] = f"https://source.unsplash.com/1600x900/?{marca_query},{modelo_query}"
             db.add(Car(**car))
         
         db.commit()

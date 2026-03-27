@@ -10,6 +10,7 @@ class CarBase(BaseModel):
     velocidad_max: int = Field(..., gt=0)
     precio: float = Field(..., gt=0)
     color_fabrica: str = Field(..., min_length=2, max_length=50)
+    image_url: str | None = Field(None, max_length=500)
 
 
 class CarCreate(CarBase):
@@ -25,6 +26,7 @@ class CarUpdate(BaseModel):
     velocidad_max: int | None = Field(None, gt=0)
     precio: float | None = Field(None, gt=0)
     color_fabrica: str | None = Field(None, min_length=2, max_length=50)
+    image_url: str | None = Field(None, max_length=500)
 
 
 class CarResponse(CarBase):

@@ -18,6 +18,7 @@ class Car:
     precio: float
     color_fabrica: str
     id: Optional[int] = None
+    image_url: Optional[str] = None
 
 @dataclass
 class User:
