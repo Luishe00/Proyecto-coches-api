@@ -1,14 +1,12 @@
 # 🏎️ Car Catalog API - Arquitectura Hexagonal (100%)
 
-Esta es una API REST profesional para un catálogo de coches de lujo, diseñada bajo los principios de **Arquitectura Hexagonal (Puertos y Adaptadores)**. Ofrece un sistema de roles (RBAC), gestión de favoritos con personalización de color y un núcleo de negocio 100% desacoplado.
+Esta es una API REST profesional para un catálogo de coches de lujo, diseñada bajo los principios de **Arquitectura Hexagonal (Puertos y Adaptadores)**. Ofrece un sistema de roles (RBAC), gestión de favoritos y un núcleo de negocio 100% desacoplado.
 
 ## 🌟 Características Destacadas
 
-- **Doble Capa de Color**: 
-  - **Color de Fábrica**: Cada coche del catálogo incluye su color original icónico (ej. Ferrari Rosso Corsa).
-  - **Personalización Privada**: Los usuarios registrados pueden elegir y actualizar su propio color en su lista de favoritos.
 - **Arquitectura Hexagonal Pura**: Separación estricta entre Dominio, Aplicación e Infraestructura.
 - **RBAC (Role-Based Access Control)**: Diferenciación clara entre `superadmin` y `user`.
+- **Catálogo de Coches**: CRUD completo para administradores y vistas de catálogo/favoritos para usuarios.
 - **Base de Datos SQLite**: Sin dependencias externas pesadas, lista para funcionar.
 
 ## 🏗️ Estructura del Proyecto
@@ -36,10 +34,11 @@ Esta es una API REST profesional para un catálogo de coches de lujo, diseñada 
    uvicorn app.main:app --reload
    ```
 2. **Documentación Swagger:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
-3. **Endpoints de Color**:
-   - `GET /api/v1/cars/`: Ver catálogo con `color_fabrica`.
-   - `POST /api/v1/favorites/`: Añadir favorito con color opcional.
-   - `PATCH /api/v1/favorites/{car_id}/color`: Personalizar color (Solo registrados).
+3. **Endpoints principales**:
+   - `GET /api/v1/cars/`: Ver catálogo.
+   - `POST /api/v1/favorites/`: Añadir favorito.
+   - `GET /api/v1/favorites/`: Listar favoritos.
+   - `PATCH /api/v1/favorites/{car_id}`: Actualizar favorito (rol de usuario).
 
 ## 🧪 Testing
 El proyecto cuenta con una robusta suite de **33 tests** dividida estratégicamente:
