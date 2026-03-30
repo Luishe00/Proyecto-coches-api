@@ -18,12 +18,21 @@ async function request(endpoint, opts = {}) {
     ...(opts.headers || {}),
   };
 
+  const hasContentType = Object.keys(headers).some(
+    (key) => key.toLowerCase() === 'content-type'
+  );
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  // Only set Content-Type JSON when not sending FormData
-  if (!(opts.body instanceof FormData) && opts.body && typeof opts.body === 'string') {
+  // Only set JSON when caller did not provide a specific content type.
+  if (
+    !(opts.body instanceof FormData) &&
+    opts.body &&
+    typeof opts.body === 'string' &&
+    !hasContentType
+  ) {
     headers['Content-Type'] = 'application/json';
   }
 
