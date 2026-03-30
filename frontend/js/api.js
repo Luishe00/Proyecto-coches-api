@@ -4,6 +4,7 @@
  */
 
 export const API_BASE = 'http://localhost:8000/api/v1';
+export const API_ORIGIN = new URL(API_BASE).origin;
 
 /**
  * Core fetch wrapper.
@@ -125,6 +126,37 @@ export function apiCreateCar(data) {
   });
 }
 
+function buildCarPayloadFromFormData(formData) {
+  return {
+    marca: String(formData.get('marca') || '').trim(),
+    modelo: String(formData.get('modelo') || '').trim(),
+    anio_fabricacion: parseInt(String(formData.get('anio_fabricacion') || ''), 10),
+    cv: parseInt(String(formData.get('cv') || ''), 10),
+    peso: parseFloat(String(formData.get('peso') || '')),
+    velocidad_max: parseInt(String(formData.get('velocidad_max') || ''), 10),
+    precio: parseFloat(String(formData.get('precio') || '')),
+    color_fabrica: String(formData.get('color_fabrica') || '').trim(),
+  };
+}
+
+function getImageFileFromFormData(formData) {
+  const file = formData.get('image_file');
+  if (!(file instanceof File)) return null;
+  if (!file.name || file.size === 0) return null;
+  return file;
+}
+
+export async function apiCreateCarFromFormData(formData) {
+  const payload = buildCarPayloadFromFormData(formData);
+  const imageFile = getImageFileFromFormData(formData);
+
+  let savedCar = await apiCreateCar(payload);
+  if (imageFile) {
+    savedCar = await apiUploadCarImage(savedCar.id, imageFile);
+  }
+  return savedCar;
+}
+
 /**
  * Update a car (superadmin only).
  */
@@ -133,6 +165,17 @@ export function apiUpdateCar(id, data) {
     method: 'PUT',
     body: JSON.stringify(data),
   });
+}
+
+export async function apiUpdateCarFromFormData(id, formData) {
+  const payload = buildCarPayloadFromFormData(formData);
+  const imageFile = getImageFileFromFormData(formData);
+
+  let savedCar = await apiUpdateCar(id, payload);
+  if (imageFile) {
+    savedCar = await apiUploadCarImage(id, imageFile);
+  }
+  return savedCar;
 }
 
 /**

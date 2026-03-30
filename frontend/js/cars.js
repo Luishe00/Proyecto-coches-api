@@ -3,18 +3,18 @@
  */
 
 import {
+  API_ORIGIN,
   apiGetCars,
   apiGetCar,
-  apiCreateCar,
-  apiUpdateCar,
+  apiCreateCarFromFormData,
+  apiUpdateCarFromFormData,
   apiDeleteCar,
-  apiUploadCarImage,
   apiGetFavorites,
   apiAddFavorite,
   apiRemoveFavorite,
   apiUpdateFavoriteColor,
 } from './api.js';
-import { isSuperadmin, isLoggedIn } from './auth.js';
+import { isSuperadmin, isLoggedIn, getRole } from './auth.js';
 import { showToast } from './utils.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -23,25 +23,72 @@ function formatPrice(price) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price);
 }
 
-function carImageSrc(car) {
-  if (!car.image_url) return '';
-  // Relative paths served from FastAPI /static
-  if (car.image_url.startsWith('/') || car.image_url.startsWith('http')) return car.image_url;
-  return `http://localhost:8000/${car.image_url}`;
+function getCarImageUrl(car) {
+  if (!car?.image_url) return null;
+
+  const rawPath = String(car.image_url).trim();
+  if (!rawPath) return null;
+
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+    return rawPath;
+  }
+
+  let normalizedPath = rawPath;
+  if (!normalizedPath.startsWith('/')) {
+    normalizedPath = `/${normalizedPath}`;
+  }
+
+  if (normalizedPath.startsWith('/uploads/')) {
+    normalizedPath = `/static${normalizedPath}`;
+  }
+
+  return `${API_ORIGIN}${normalizedPath}`;
 }
 
 function carPlaceholderSvg(marca) {
-  const letter = (marca || 'C').charAt(0).toUpperCase();
-  return `<div class="car-placeholder"><span>${letter}</span></div>`;
+  const brand = (marca || 'CarHub').toUpperCase();
+  return `
+    <div class="car-placeholder" aria-label="Imagen no disponible">
+      <span class="car-placeholder__logo">CH</span>
+      <span class="car-placeholder__line"></span>
+      <span class="car-placeholder__brand">${brand}</span>
+    </div>
+  `;
+}
+
+function renderCarMedia(car) {
+  const imageUrl = getCarImageUrl(car);
+  if (!imageUrl) {
+    return carPlaceholderSvg(car?.marca);
+  }
+  return `<img src="${imageUrl}" alt="${car.marca} ${car.modelo}" loading="lazy" />`;
 }
 
 // ─── Car Card ─────────────────────────────────────────────────────────────────
 
 function buildCarCard(car, favSet) {
+  const role = getRole();
   const isFav = favSet.has(car.id);
-  const imgHtml = car.image_url
-    ? `<img src="${carImageSrc(car)}" alt="${car.marca} ${car.modelo}" loading="lazy" />`
-    : carPlaceholderSvg(car.marca);
+  const imgHtml = renderCarMedia(car);
+
+  let actions = `<button class="btn-icon btn-detail" data-car-id="${car.id}" title="Ver detalles">🔍</button>`;
+  if (role === 'user') {
+    actions = `
+      <button class="btn-icon btn-fav ${isFav ? 'active' : ''}" data-car-id="${car.id}" title="${isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+        ${isFav ? '❤️' : '🤍'}
+      </button>
+      ${actions}
+    `;
+  } else if (isSuperadmin()) {
+    actions = `
+      <button class="btn-icon btn-fav ${isFav ? 'active' : ''}" data-car-id="${car.id}" title="${isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+        ${isFav ? '❤️' : '🤍'}
+      </button>
+      <button class="btn-icon btn-edit" data-car-id="${car.id}" title="Editar">✏️</button>
+      <button class="btn-icon btn-delete" data-car-id="${car.id}" title="Eliminar">🗑️</button>
+      ${actions}
+    `;
+  }
 
   return `
     <article class="car-card glass-card animate-fade-in" data-id="${car.id}">
@@ -56,18 +103,7 @@ function buildCarCard(car, favSet) {
         </div>
         <div class="car-card__footer">
           <span class="car-card__price">${formatPrice(car.precio)}</span>
-          <div class="car-card__actions">
-            ${isLoggedIn() ? `
-              <button class="btn-icon btn-fav ${isFav ? 'active' : ''}" data-car-id="${car.id}" title="${isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
-                ${isFav ? '❤️' : '🤍'}
-              </button>
-            ` : ''}
-            <button class="btn-icon btn-detail" data-car-id="${car.id}" title="Ver detalles">🔍</button>
-            ${isSuperadmin() ? `
-              <button class="btn-icon btn-edit" data-car-id="${car.id}" title="Editar">✏️</button>
-              <button class="btn-icon btn-delete" data-car-id="${car.id}" title="Eliminar">🗑️</button>
-            ` : ''}
-          </div>
+          <div class="car-card__actions">${actions}</div>
         </div>
       </div>
     </article>
@@ -80,9 +116,7 @@ function openCarModal(car, favSet) {
   closeCarModal();
 
   const isFav = favSet.has(car.id);
-  const imgHtml = car.image_url
-    ? `<img src="${carImageSrc(car)}" alt="${car.marca} ${car.modelo}" />`
-    : carPlaceholderSvg(car.marca);
+  const imgHtml = renderCarMedia(car);
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay animate-fade-in';
@@ -264,12 +298,10 @@ function openCarFormModal(car = null, onSaved) {
             <input type="text" name="color_fabrica" value="${car?.color_fabrica || ''}" required minlength="2" maxlength="50" />
           </div>
         </div>
-        ${isEdit ? `
-          <div class="form-group form-group--full">
-            <label>Subir imagen</label>
-            <input type="file" id="carImageFile" accept="image/*" />
-          </div>
-        ` : ''}
+        <div class="form-group form-group--full">
+          <label>${isEdit ? 'Actualizar imagen (opcional)' : 'Imagen del coche (opcional)'}</label>
+          <input type="file" id="carImageFile" name="image_file" accept="image/*" />
+        </div>
         <div class="form-error" id="carFormError"></div>
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" id="carFormCancel">Cancelar</button>
@@ -297,30 +329,15 @@ function openCarFormModal(car = null, onSaved) {
     errorEl.textContent = '';
     _setLoading(submitBtn, true);
 
-    const fd = new FormData(e.target);
-    const data = {
-      marca: fd.get('marca'),
-      modelo: fd.get('modelo'),
-      anio_fabricacion: parseInt(fd.get('anio_fabricacion'), 10),
-      cv: parseInt(fd.get('cv'), 10),
-      peso: parseFloat(fd.get('peso')),
-      velocidad_max: parseInt(fd.get('velocidad_max'), 10),
-      precio: parseFloat(fd.get('precio')),
-      color_fabrica: fd.get('color_fabrica'),
-    };
+    const formData = new FormData(e.target);
 
     try {
       let savedCar;
       if (isEdit) {
-        savedCar = await apiUpdateCar(car.id, data);
-        // Upload image if selected
-        const imgFile = overlay.querySelector('#carImageFile')?.files?.[0];
-        if (imgFile) {
-          savedCar = await apiUploadCarImage(car.id, imgFile);
-        }
+        savedCar = await apiUpdateCarFromFormData(car.id, formData);
         showToast('Coche actualizado ✅');
       } else {
-        savedCar = await apiCreateCar(data);
+        savedCar = await apiCreateCarFromFormData(formData);
         showToast('Coche creado ✅');
       }
       close();
@@ -342,12 +359,14 @@ function _setLoading(btn, loading) {
 // ─── Catalog View ─────────────────────────────────────────────────────────────
 
 export async function renderCatalogView(container) {
+  const role = getRole();
   container.innerHTML = `
     <section class="catalog-section">
       <div class="catalog-header animate-fade-in">
         <h2 class="section-title">Catálogo <span class="accent">Premium</span></h2>
         <p class="section-sub">Descubre los coches más exclusivos del mundo</p>
         ${isSuperadmin() ? `<button class="btn btn-primary" id="newCarBtn">+ Nuevo coche</button>` : ''}
+        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por marca o modelo..." autocomplete="off" />
       </div>
       ${buildFilterBar()}
       <div class="cars-grid" id="carsGrid">
@@ -364,16 +383,32 @@ export async function renderCatalogView(container) {
   async function loadCars(filters = {}) {
     grid.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Cargando catálogo…</p></div>`;
     try {
-      const [cars, favs] = await Promise.all([
-        apiGetCars(filters),
-        isLoggedIn() ? apiGetFavorites().catch(() => []) : Promise.resolve([]),
-      ]);
+      let cars = await apiGetCars(filters);
+      let favs = [];
+      if (role === 'user' || isSuperadmin()) {
+        favs = await apiGetFavorites().catch(() => []);
+      }
       currentCars = cars;
       favSet = new Set(favs.map(f => f.car_id));
       renderGrid(cars, favSet);
     } catch (err) {
       grid.innerHTML = `<div class="error-msg">Error al cargar coches: ${err.message}</div>`;
     }
+  }
+
+  // Real-time search logic
+  const searchInput = container.querySelector('#searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      const filtered = !q
+        ? currentCars
+        : currentCars.filter(car =>
+            car.marca.toLowerCase().includes(q) ||
+            car.modelo.toLowerCase().includes(q)
+          );
+      renderGrid(filtered, favSet);
+    });
   }
 
   function renderGrid(cars, favSet) {
@@ -398,13 +433,15 @@ export async function renderCatalogView(container) {
       });
     });
 
-    grid.querySelectorAll('.btn-fav').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = parseInt(btn.dataset.carId, 10);
-        await _toggleFav(id, favSet, btn);
-        btn.textContent = favSet.has(id) ? '❤️' : '🤍';
+    if (role === 'user' || isSuperadmin()) {
+      grid.querySelectorAll('.btn-fav').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = parseInt(btn.dataset.carId, 10);
+          await _toggleFav(id, favSet, btn);
+          btn.textContent = favSet.has(id) ? '❤️' : '🤍';
+        });
       });
-    });
+    }
 
     if (isSuperadmin()) {
       grid.querySelectorAll('.btn-edit').forEach(btn => {
@@ -448,9 +485,11 @@ export async function renderCatalogView(container) {
   });
 
   // Admin new car
-  container.querySelector('#newCarBtn')?.addEventListener('click', () => {
-    openCarFormModal(null, () => loadCars(collectFilters(container)));
-  });
+  if (isSuperadmin()) {
+    container.querySelector('#newCarBtn')?.addEventListener('click', () => {
+      openCarFormModal(null, () => loadCars(collectFilters(container)));
+    });
+  }
 
   await loadCars();
 }
@@ -489,9 +528,7 @@ export async function renderFavoritesView(container) {
 
   function buildFavCard(fav) {
     const car = fav.car;
-    const imgHtml = car.image_url
-      ? `<img src="${carImageSrc(car)}" alt="${car.marca} ${car.modelo}" loading="lazy" />`
-      : carPlaceholderSvg(car.marca);
+    const imgHtml = renderCarMedia(car);
 
     return `
       <article class="car-card glass-card animate-fade-in fav-card" data-id="${car.id}" data-fav-id="${fav.id}">
@@ -500,13 +537,7 @@ export async function renderFavoritesView(container) {
           <div class="car-card__brand">${car.marca}</div>
           <h3 class="car-card__model">${car.modelo}</h3>
           <div class="car-card__year">${car.anio_fabricacion}</div>
-          <div class="fav-color-row">
-            <label>Color personalizado:</label>
-            <div class="color-input-wrap">
-              <input type="color" class="fav-color-input" data-car-id="${car.id}" value="${_colorToHex(fav.selected_color)}" title="Cambiar color" />
-              <span class="fav-color-label">${fav.selected_color || 'Color original'}</span>
-            </div>
-          </div>
+
           <div class="car-card__footer">
             <span class="car-card__price">${formatPrice(car.precio)}</span>
             <div class="car-card__actions">
@@ -541,24 +572,7 @@ export async function renderFavoritesView(container) {
       });
     });
 
-    grid.querySelectorAll('.fav-color-input').forEach(input => {
-      let debounce;
-      input.addEventListener('input', () => {
-        clearTimeout(debounce);
-        debounce = setTimeout(async () => {
-          const carId = parseInt(input.dataset.carId, 10);
-          const color = input.value;
-          try {
-            await apiUpdateFavoriteColor(carId, color);
-            const label = input.nextElementSibling;
-            if (label) label.textContent = color;
-            showToast('Color actualizado 🎨');
-          } catch (err) {
-            showToast(err.message, 'error');
-          }
-        }, 600);
-      });
-    });
+
   }
 
   await loadFavs();

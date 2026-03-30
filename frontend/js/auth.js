@@ -7,6 +7,22 @@ import { navigate } from './utils.js';
 
 const TOKEN_KEY = 'carhub_token';
 const USER_KEY = 'carhub_user';
+const ROLE_KEY = 'role';
+export function getRole() {
+  // Si hay usuario cacheado, prioriza su rol
+  const user = getCachedUser();
+  if (user && user.role) return user.role;
+  // Si no, revisa localStorage
+  return localStorage.getItem(ROLE_KEY) || null;
+}
+
+export function setRole(role) {
+  localStorage.setItem(ROLE_KEY, role);
+}
+
+export function removeRole() {
+  localStorage.removeItem(ROLE_KEY);
+}
 
 // ─── Token / User helpers ─────────────────────────────────────────────────────
 
@@ -61,6 +77,7 @@ export async function refreshCurrentUser() {
 
 export function logout() {
   removeToken();
+  removeRole();
   navigate('#login');
 }
 
@@ -127,6 +144,10 @@ export function renderAuthView(container) {
             <span class="btn-loader hidden"></span>
           </button>
         </form>
+
+        <div class="guest-access-row">
+          <button id="guestAccessBtn" class="btn btn-secondary btn-full" type="button">Explorar como invitado</button>
+        </div>
       </div>
     </section>
   `;
@@ -208,6 +229,14 @@ function _attachAuthEvents(container) {
     } finally {
       _setLoading(btn, false);
     }
+  });
+
+  // Guest access
+  container.querySelector('#guestAccessBtn').addEventListener('click', () => {
+    removeToken();
+    removeRole();
+    setRole('guest');
+    navigate('#catalog');
   });
 }
 

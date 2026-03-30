@@ -2,10 +2,13 @@
  * app.js — SPA router, navigation guards and app shell.
  */
 
-import { isLoggedIn, logout, refreshCurrentUser, getCachedUser, isSuperadmin } from './auth.js';
+import { isLoggedIn, logout, refreshCurrentUser, getCachedUser, isSuperadmin, getRole } from './auth.js';
 import { renderAuthView } from './auth.js';
 import { renderCatalogView, renderFavoritesView } from './cars.js';
 import { navigate } from './utils.js';
+
+const PUBLIC_ROUTES = new Set(['#login']);
+let authValidated = false;
 
 // ─── App shell ────────────────────────────────────────────────────────────────
 
@@ -39,18 +42,24 @@ function updateNav() {
 
   const user = getCachedUser();
   const loggedIn = isLoggedIn();
+  const role = getRole();
 
-  nav.innerHTML = `
-    ${loggedIn ? `
+  if (role === 'guest') {
+    nav.innerHTML = `
+      <a href="#catalog" class="nav-link">Catálogo</a>
+      <button class="btn btn-outline btn-sm" id="logoutBtn">Iniciar sesión</button>
+    `;
+  } else if (loggedIn) {
+    nav.innerHTML = `
       <a href="#catalog" class="nav-link">Catálogo</a>
       <a href="#favorites" class="nav-link">❤️ Favoritos</a>
       ${isSuperadmin() ? `<span class="nav-badge">Admin</span>` : ''}
       <span class="nav-user">👤 ${user?.username || ''}</span>
       <button class="btn btn-outline btn-sm" id="logoutBtn">Salir</button>
-    ` : `
-      <a href="#login" class="nav-link">Iniciar sesión</a>
-    `}
-  `;
+    `;
+  } else {
+    nav.innerHTML = `<a href="#login" class="nav-link">Iniciar sesión</a>`;
+  }
 
   document.getElementById('logoutBtn')?.addEventListener('click', () => {
     logout();
@@ -61,7 +70,8 @@ function updateNav() {
 // ─── Router ───────────────────────────────────────────────────────────────────
 
 async function handleRoute() {
-  const hash = window.location.hash || '#catalog';
+  const role = getRole();
+  const hash = window.location.hash || ((isLoggedIn() || role === 'guest') ? '#catalog' : '#login');
   const container = document.getElementById('viewContainer');
   if (!container) return;
 
@@ -69,10 +79,22 @@ async function handleRoute() {
   document.getElementById('carModal')?.remove();
   document.getElementById('carFormModal')?.remove();
 
-  // Auth guard
-  if (!isLoggedIn() && hash !== '#login') {
-    navigate('#login');
-    return;
+  const isPublic = PUBLIC_ROUTES.has(hash);
+  if (!isPublic) {
+    if (!(isLoggedIn() || role === 'guest')) {
+      navigate('#login');
+      return;
+    }
+
+    // Solo refrescar usuario si no es guest
+    if (role !== 'guest' && !authValidated) {
+      const user = await refreshCurrentUser();
+      authValidated = !!user;
+      if (!user) {
+        navigate('#login');
+        return;
+      }
+    }
   }
 
   updateNav();
@@ -83,6 +105,7 @@ async function handleRoute() {
   });
 
   if (hash === '#login') {
+    authValidated = false;
     if (isLoggedIn()) { navigate('#catalog'); return; }
     renderAuthView(container);
     return;
@@ -115,7 +138,8 @@ async function init() {
 
   // Try to refresh user info if we have a token
   if (isLoggedIn()) {
-    await refreshCurrentUser();
+    const user = await refreshCurrentUser();
+    authValidated = !!user;
   }
 
   // Listen for hash changes
