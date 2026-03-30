@@ -42,25 +42,33 @@ Esta es una API REST profesional para un catálogo de coches de lujo, diseñada 
    - `PATCH /api/v1/favorites/{car_id}/color`: Personalizar color (Solo registrados).
 
 ## 🧪 Testing
-El proyecto cuenta con una robusta suite de **33 tests** dividida estratégicamente:
 
-1. **Pruebas Unitarias de Caja Blanca (Aislamiento Total)**:
-   Aíslan por completo la capa de aplicación usando Mocks (`unittest.mock`), garantizando un exhaustivo control en las rutas lógicas de:
-   - `auth_service` (JWT, Verificaciones de roles estrictas)
-   - `car_service` (CRUD)
-   - `favorite_service` (Control de duplicados, RBAC)
-   - `car_image_service` (Validación de archivos sin manipular el filesystem)
+El proyecto cuenta con una robusta suite de **82 tests** (82 passed) con una cobertura total del **93%**, dividida estratégicamente:
+
+1. **Pruebas Unitarias de Caja Blanca y Caja Negra (Aislamiento Total)**:
+   - **Técnicas**: Particiones de Equivalencia, Valores Límite, Tablas de Decisión y Cobertura de Sentencia/Decisión.
+   - **Alcance**: Validación exhaustiva de la lógica de negocio en `auth_service`, `car_service`, `favorite_service` y esquemas Pydantic.
+   - **Aislamiento**: Uso intensivo de Mocks (`unittest.mock`) para garantizar que la lógica es independiente de la base de datos.
    
    ```bash
+   # Dentro de la carpeta /backend
    pytest tests/test_unit_*.py
    ```
 
-2. **Pruebas de Integración (API y DB)**:
-   Valida el correcto funcionamiento de los endpoints, middlewares y la integridad persistente en la Base de Datos SQLite.
+2. **Pruebas de Integración Reales (Real DB)**:
+   - **Tecnología**: Uso de `db_session` con base de datos SQLite en memoria (`test.db`).
+   - **Objetivo**: Validar el filtrado dinámico de coches, la persistencia real de usuarios y el funcionamiento de la paginación (`skip/limit`) sin mocks.
    
    ```bash
-   pytest tests/
+   # Ejecuta todos los tests con reporte de cobertura
+   pip install pytest-cov
+   python -m pytest --cov=app tests/
    ```
+
+## 📊 Estadísticas de Cobertura Final
+- **Total de Tests**: 82 (Passed)
+- **Cobertura Total**: 93%
+- **Servicios de Negocio**: 98% - 100% de cobertura individual.
 
 ## 🔒 Usuarios de Prueba
 - **Superadmin**: `admin` / `admin123`

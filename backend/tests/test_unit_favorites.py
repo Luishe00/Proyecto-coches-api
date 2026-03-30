@@ -78,3 +78,48 @@ def test_remove_favorite_not_found(mock_repo):
     with pytest.raises(EntityNotFoundError):
         favorite_service.remove_favorite(mock_repo, 1, 99)
     mock_repo.delete.assert_not_called()
+
+# --- BLACK-BOX: Equivalence Classes ---
+@pytest.mark.parametrize("color, expected_result", [
+    ("Rojo", "Rojo"),
+    (None, None),
+    ("", "")
+])
+def test_create_favorite_equivalence_classes(mock_repo, color, expected_result):
+    mock_repo.car_exists.return_value = True
+    fake_fav = Favorite(user_id=1, car_id=2, selected_color=color)
+    mock_repo.create.return_value = fake_fav
+
+    result = favorite_service.create_favorite(mock_repo, 1, 2, color)
+    assert result.selected_color == expected_result
+
+# --- BLACK-BOX: Decision Tables ---
+@pytest.mark.parametrize("car_exists, selected_color, should_fail", [
+    (True, "Verde", False),
+    (True, None, False),
+    (False, "Verde", True)
+])
+def test_create_favorite_decision_table(mock_repo, car_exists, selected_color, should_fail):
+    mock_repo.car_exists.return_value = car_exists
+    if not should_fail:
+        mock_repo.create.return_value = Favorite(user_id=1, car_id=2, selected_color=selected_color)
+
+    if should_fail:
+        with pytest.raises(EntityNotFoundError):
+            favorite_service.create_favorite(mock_repo, 1, 2, selected_color)
+    else:
+        result = favorite_service.create_favorite(mock_repo, 1, 2, selected_color)
+        assert result.selected_color == selected_color
+
+# --- WHITE-BOX: Decision Coverage ---
+def test_remove_favorite_branches(mock_repo):
+    # Caso 1: Favorito existe (rama positiva)
+    mock_repo.get_by_user_and_car.return_value = Favorite(id=1, user_id=1, car_id=1)
+    res = favorite_service.remove_favorite(mock_repo, 1, 1)
+    assert res is not None
+    mock_repo.delete.assert_called_once()
+
+    # Caso 2: Favorito no existe (rama if not favorite)
+    mock_repo.get_by_user_and_car.return_value = None
+    with pytest.raises(EntityNotFoundError):
+        favorite_service.remove_favorite(mock_repo, 1, 2)

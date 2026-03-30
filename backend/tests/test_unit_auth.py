@@ -1,4 +1,5 @@
 import pytest
+from pydantic import ValidationError
 from unittest.mock import MagicMock
 from jose import jwt
 from app.services import auth_service
@@ -130,3 +131,37 @@ async def test_get_current_active_superadmin_fail():
     fake_user = User(id=1, username="u", hashed_password="pw", role=RoleEnum.user)
     with pytest.raises(PermissionDeniedError):
         await auth_service.get_current_active_superadmin(fake_user)
+
+# --- BLACK-BOX: Equivalence Classes ---
+def test_user_create_password_valid_length():
+    user = UserCreate(username="test", password="a" * 72)
+    assert user.password == "a" * 72
+
+def test_user_create_password_invalid_length():
+    with pytest.raises(ValidationError):
+        UserCreate(username="test", password="a" * 73)
+
+# --- BLACK-BOX: Decision Tables ---
+@pytest.mark.parametrize("user_exists, password_correct, expected_result", [
+    (True, True, "user"),
+    (True, False, None),
+    (False, None, None)
+])
+def test_authenticate_user_decision_table(mock_repo, user_exists, password_correct, expected_result):
+    password = "password123"
+    hashed = get_password_hash(password)
+    fake_user = User(id=1, username="testuser", hashed_password=hashed, role=RoleEnum.user)
+    
+    if user_exists:
+        mock_repo.get_by_username.return_value = fake_user
+    else:
+        mock_repo.get_by_username.return_value = None
+        
+    pwd_to_check = password if password_correct else "wrong_password"
+    
+    result = auth_service.authenticate_user(mock_repo, "testuser", pwd_to_check)
+    
+    if expected_result == "user":
+        assert result == fake_user
+    else:
+        assert result is None
