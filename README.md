@@ -2,15 +2,15 @@
 
 Repositorio con backend FastAPI + frontend SPA en JavaScript.
 
-## Opcion 1 - Arranque con 1 clic (Windows)
+## Opción 1 - Arranque con 1 clic (Windows)
 
 1. Haz doble clic en `start-local.bat`.
-2. Se abriran dos ventanas:
+2. Se abrirán dos ventanas:
    - Backend: `http://127.0.0.1:8000`
    - Frontend: `http://127.0.0.1:5500`
-3. El navegador se abrira automaticamente en el frontend.
+3. El navegador se abrirá automáticamente en el frontend.
 
-## Opcion 2 - Arranque manual (cualquier sistema)
+## Opción 2 - Arranque manual (cualquier sistema)
 
 ### 1) Backend
 
@@ -28,7 +28,7 @@ cd frontend
 python -m http.server 5500 --bind 127.0.0.1
 ```
 
-### 3) Abrir aplicacion
+### 3) Abrir aplicación
 
 Abre en el navegador:
 
@@ -37,9 +37,9 @@ Abre en el navegador:
 ## Nota importante
 
 Abrir `index.html` con doble clic usa `file://` y no es un servidor HTTP.
-Para que funcione correctamente la SPA, siempre hay que levantar un servidor local (opcion 1 u opcion 2).
+Para que funcione correctamente la SPA, siempre hay que levantar un servidor local (opción 1 u opción 2).
 
-## Documentacion adicional
+## Documentación adicional
 
 - Backend completo: `backend/README.md`
 - Frontend visual: `frontend/README.md`
