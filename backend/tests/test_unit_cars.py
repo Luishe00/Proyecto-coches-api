@@ -1,4 +1,5 @@
 import pytest
+from pydantic import ValidationError
 from unittest.mock import MagicMock
 from app.services import car_service
 from app.repositories.car_repository import ICarRepository
@@ -98,3 +99,46 @@ def test_delete_car_not_found(mock_repo):
         car_service.delete_car(mock_repo, 999)
     # verify delete wasn't called
     mock_repo.delete.assert_not_called()
+
+# --- BLACK-BOX: Equivalence Classes ---
+def test_car_create_year_valid():
+    car = CarCreate(marca="Ford", modelo="Focus", anio_fabricacion=1990, cv=100, peso=1200, velocidad_max=200, precio=10000, color_fabrica="Rojo")
+    assert car.anio_fabricacion == 1990
+
+def test_car_create_year_invalid_low():
+    with pytest.raises(ValidationError):
+        CarCreate(marca="Ford", modelo="Focus", anio_fabricacion=1885, cv=100, peso=1200, velocidad_max=200, precio=10000, color_fabrica="Rojo")
+
+def test_car_create_year_invalid_high():
+    with pytest.raises(ValidationError):
+        CarCreate(marca="Ford", modelo="Focus", anio_fabricacion=2028, cv=100, peso=1200, velocidad_max=200, precio=10000, color_fabrica="Rojo")
+
+def test_car_create_price_invalid_zero():
+    with pytest.raises(ValidationError):
+        CarCreate(marca="Ford", modelo="Focus", anio_fabricacion=2020, cv=100, peso=1200, velocidad_max=200, precio=0, color_fabrica="Rojo")
+
+# --- BLACK-BOX: Decision Tables ---
+@pytest.mark.parametrize("update_marca, update_precio", [
+    (True, True),
+    (True, False),
+    (False, True),
+    (False, False)
+])
+def test_car_update_decision_table(update_marca, update_precio):
+    update_data = {}
+    if update_marca:
+        update_data["marca"] = "Audi"
+    if update_precio:
+        update_data["precio"] = 30000
+    
+    car_update = CarUpdate(**update_data)
+    
+    if update_marca:
+        assert car_update.marca == "Audi"
+    else:
+        assert car_update.marca is None
+        
+    if update_precio:
+        assert car_update.precio == 30000
+    else:
+        assert car_update.precio is None

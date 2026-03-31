@@ -5,9 +5,9 @@ Esta es una API REST profesional para un catálogo de coches de lujo, diseñada 
 ## 🌟 Características Destacadas
 
 - **Arquitectura Hexagonal Pura**: Separación estricta entre Dominio, Aplicación e Infraestructura.
-- **RBAC (Role-Based Access Control)**: Diferenciación clara entre `superadmin` y `user`.
-- **Catálogo de Coches**: CRUD completo para administradores y vistas de catálogo/favoritos para usuarios.
-- **Base de Datos SQLite**: Sin dependencias externas pesadas, lista para funcionar.
+- **RBAC (Role-Based Access Control)**: `superadmin` y `user` con permisos distintos.
+- **Gestión de Favoritos**: Enlace de usuarios con coches favoritos.
+- **Base de Datos SQLite**: Ligera y sin dependencias exteriores.
 
 ## 🏗️ Estructura del Proyecto
 - **Dominio (`app/domain`)**: Entidades de negocio (`Car`, `Favorite`, `User`). Zero dependencias externas.
@@ -38,28 +38,36 @@ Esta es una API REST profesional para un catálogo de coches de lujo, diseñada 
    - `GET /api/v1/cars/`: Ver catálogo.
    - `POST /api/v1/favorites/`: Añadir favorito.
    - `GET /api/v1/favorites/`: Listar favoritos.
-   - `PATCH /api/v1/favorites/{car_id}`: Actualizar favorito (rol de usuario).
+   - `PATCH /api/v1/favorites/{favorite_id}`: Actualizar favorito.
 
 ## 🧪 Testing
-El proyecto cuenta con una robusta suite de **33 tests** dividida estratégicamente:
 
-1. **Pruebas Unitarias de Caja Blanca (Aislamiento Total)**:
-   Aíslan por completo la capa de aplicación usando Mocks (`unittest.mock`), garantizando un exhaustivo control en las rutas lógicas de:
-   - `auth_service` (JWT, Verificaciones de roles estrictas)
-   - `car_service` (CRUD)
-   - `favorite_service` (Control de duplicados, RBAC)
-   - `car_image_service` (Validación de archivos sin manipular el filesystem)
+El proyecto cuenta con una robusta suite de **82 tests** (82 passed) con una cobertura total del **93%**, dividida estratégicamente:
+
+1. **Pruebas Unitarias de Caja Blanca y Caja Negra (Aislamiento Total)**:
+   - **Técnicas**: Particiones de Equivalencia, Valores Límite, Tablas de Decisión y Cobertura de Sentencia/Decisión.
+   - **Alcance**: Validación exhaustiva de la lógica de negocio en `auth_service`, `car_service`, `favorite_service` y esquemas Pydantic.
+   - **Aislamiento**: Uso intensivo de Mocks (`unittest.mock`) para garantizar que la lógica es independiente de la base de datos.
    
    ```bash
+   # Dentro de la carpeta /backend
    pytest tests/test_unit_*.py
    ```
 
-2. **Pruebas de Integración (API y DB)**:
-   Valida el correcto funcionamiento de los endpoints, middlewares y la integridad persistente en la Base de Datos SQLite.
+2. **Pruebas de Integración Reales (Real DB)**:
+   - **Tecnología**: Uso de `db_session` con base de datos SQLite en memoria (`test.db`).
+   - **Objetivo**: Validar el filtrado dinámico de coches, la persistencia real de usuarios y el funcionamiento de la paginación (`skip/limit`) sin mocks.
    
    ```bash
-   pytest tests/
+   # Ejecuta todos los tests con reporte de cobertura
+   pip install pytest-cov
+   python -m pytest --cov=app tests/
    ```
+
+## 📊 Estadísticas de Cobertura Final
+- **Total de Tests**: 82 (Passed)
+- **Cobertura Total**: 93%
+- **Servicios de Negocio**: 98% - 100% de cobertura individual.
 
 ## 🔒 Usuarios de Prueba
 - **Superadmin**: `admin` / `admin123`
